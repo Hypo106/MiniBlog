@@ -7,7 +7,7 @@ basedir = os.path.abspath(os.path.dirname(__file__))
 class Config():
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     SQLALCHEMY_RECODRD_QUERIES = True
-    SQLALCHEMY_DATABASE_URL = os.environ.get('DATABASE_URL') or \
+    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or \
         'sqlite:///' + os.path.join(basedir, 'data.sqlite')
     ARTICLES_PER_PAGE = 10
     COMMENTS_PER_PAGE = 6

@@ -242,6 +242,45 @@ class Comment(db.Model):
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
             url=url, hash=hash, size=size, default=default, rating=rating)
 
+    @staticmethod
+    def generate_fake(count=100):
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        article_count = Article.query.count()
+        for i in range(count):
+            a = Article.query.offset(randint(0, article_count - 1)).first()
+            c = Comment(content=forgery_py.lorem_ipsum.sentences(randint(3, 5)),
+                        timestamp=forgery_py.date.date(True),
+                        author_name=forgery_py.internet.user_name(True),
+                        author_email=forgery_py.internet.email_address(),
+                        article=a)
+            db.session.add(c)
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+
+    @staticmethod
+    def generate_fake_replies(count=100):
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        comment_count = Comment.query.count()
+        for i in range(count):
+            followed = Comment.query.offset(randint(0, comment_count - 1)).first()
+            c = Comment(content=forgery_py.lorem_ipsum.sentences(randint(3, 5)),
+                        timestamp=forgery_py.date.date(True),
+                        author_name=forgery_py.internet.user_name(True),
+                        author_email=forgery_py.internet.email_address(),
+                        article=followed.article, comment_type='reply',
+                        reply_to=followed.author_name)
+            f = Follow(follower=c, followed=followed)
+            db.session.add(f)
+            db.session.commit()
+
     def is_reply(self):
         if self.followed.count() == 0:
             return False
@@ -267,6 +306,29 @@ class Article(db.Model):
     comments = db.relationship('Comment', backref='article', lazy='dynamic')
 
     @staticmethod
+    def generate_fake(count=100):
+        from sqlalchemy.exc import IntegrityError
+        from random import seed, randint
+        import forgery_py
+
+        seed()
+        articleType_count = ArticleType.query.count()
+        source_count = Source.query.count()
+        for i in range(count):
+            aT = ArticleType.query.offset(randint(0, articleType_count - 1)).first()
+            s = Source.query.offset(randint(0, source_count - 1)).first()
+            a = Article(title=forgery_py.lorem_ipsum.title(randint(3, 5)),
+                        content=forgery_py.lorem_ipsum.sentences(randint(15, 35)),
+                        summary=forgery_py.lorem_ipsum.sentences(randint(2, 5)),
+                        num_of_view=randint(100, 15000),
+                        articleType=aT, source=s)
+            db.session.add(a)
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
+
+    @staticmethod
     def add_view(article, db):
         article.num_of_view += 1
         db.session.add(article)
@@ -286,7 +348,7 @@ class BlogInfo(db.Model):
     @staticmethod
     def insert_blog_info():
         blog_mini_info = BlogInfo(title=u'Mini开源博客系统',
-                                  signature=u'让每个人都轻松拥有可管理的个人博客！— By xpleaf',
+                                  signature=u'让每个人都轻松拥有可管理的个人博客！— By Hypo',
                                   navbar='inverse')
         db.session.add(blog_mini_info)
         db.session.commit()
@@ -301,6 +363,15 @@ class Plugin(db.Model):
     order = db.Column(db.Integer, default=0)
     disabled = db.Column(db.Boolean, default=False)
 
+    @staticmethod
+    def insert_system_plugin():
+        plugin = Plugin(title=u'博客统计',
+                        note = u'系统插件',
+                        content = 'system_plugin',
+                        order = 1)
+        db.session.add(plugin)
+        db.session.commit()
+
     def sort_delete(self):
         for plugin in Plugin.query.order_by(Plugin.order.asc()).offset(self.order).all():
             plugin.order -= 1
@@ -308,15 +379,6 @@ class Plugin(db.Model):
 
     def __repr__(self):
         return '<Plugin %r>' % self.title
-
-
-def insert_system_plugin():
-    plugin = Plugin(title=u'博客统计',
-                    note=u'系统插件',
-                    content='system_plugin',
-                    order=1)
-    db.session.add(plugin)
-    db.session.commit()
 
 
 class BlogView(db.Model):
