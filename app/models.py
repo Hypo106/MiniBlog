@@ -50,7 +50,7 @@ class User(UserMixin, db.Model):
         hash = self.avatar_hash or hashlib.md5(
             self.email.encode('utf-8')).hexdigest()
         return '{url}/{hash}?s={size}&d={default}&r={rating}'.format(
-            url=url, hash=hash, seize=size, default=default, rating=rating)
+            url=url, hash=hash, size=size, default=default, rating=rating)
 
 
 @login_manager.user_loader
@@ -395,6 +395,7 @@ class BlogView(db.Model):
     @staticmethod
     def add_view(db):
         view = BlogView.query.first()
-        view.num_of_view += 1
-        db.session.add(view)
-        db.session.commit()
+        if view:
+            view.num_of_view += 1
+            db.session.add(view)
+            db.session.commit()

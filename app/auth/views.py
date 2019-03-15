@@ -16,7 +16,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user is not None and user.verify_password(form.password.data):
-            logout_user(user)
+            login_user(user)
             flash(u'登陆成功！欢迎回来，%s!' % user.username, 'success')
             return redirect(request.args.get('next') or url_for('main.index'))
         else:

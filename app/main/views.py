@@ -12,7 +12,7 @@ from .forms import CommentForm
 from .. import db
 
 
-@main.route('/')
+@main.route('/',methods=['GET','POST'])
 def index():
     BlogView.add_view(db)
     page = request.args.get('page', 1, type=int)

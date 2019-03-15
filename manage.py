@@ -56,10 +56,10 @@ def deploy(deploy_type):
     if deploy_type == 'test_data':
         Menu.insert_menus()
         ArticleType.insert_articleTypes()
-        Article.generate_fake(100)
-        Comment.generate_fake(300)
-        Comment.generate_fake_replies(100)
-        Comment.generate_fake(300)
+        #Article.generate_fake(100)
+        #Comment.generate_fake(300)
+        #Comment.generate_fake_replies(100)
+        #Comment.generate_fake(300)
 
 if __name__ == '__main__':
     manager.run()
